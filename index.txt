@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>St. Sebastian – Prolog</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #02040a;
+      color: #e5e7eb;
+      overflow: hidden;
+    }
+    #game {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: radial-gradient(circle at top, #1f2933 0, #02040a 55%);
+    }
+    header {
+      padding: 10px 16px;
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #111827;
+      background: rgba(3,7,18,0.9);
+      backdrop-filter: blur(6px);
+      z-index: 10;
+    }
+    header span.title {
+      color: #e5e7eb;
+      font-weight: 600;
+    }
+    #scene-container {
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr);
+      gap: 0;
+      overflow: hidden;
+    }
+    #scene-image-wrap {
+      position: relative;
+      overflow: hidden;
+      background: #020617;
+    }
+    #scene-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: contrast(1.05) saturate(0.8) brightness(0.9);
+    }
+    #vignette {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 50% 20%, transparent 0, transparent 35%, rgba(0,0,0,0.75) 100%);
+      mix-blend-mode: multiply;
+    }
+    #scene-text-wrap {
+      background: radial-gradient(circle at top, #020617 0, #02040a 60%);
+      border-left: 1px solid #111827;
+      padding: 18px 18px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    #scene-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #f9fafb;
+    }
+    #scene-body {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #d1d5db;
+      white-space: pre-line;
+    }
+    #choices {
+      margin-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    button.choice {
+      background: #111827;
+      color: #e5e7eb;
+      border: 1px solid #1f2937;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s, box-shadow 0.15s, border-color 0.15s;
+    }
+    button.choice:hover {
+      background: #1f2937;
+      border-color: #4b5563;
+      box-shadow: 0 0 12px rgba(59,130,246,0.35);
+      transform: translateY(-1px);
+    }
+    button.choice:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+    #logline {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 8px;
+      font-style: italic;
+    }
+    #footer {
+      padding: 6px 16px 10px;
+      font-size: 11px;
+      color: #4b5563;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #111827;
+      background: rgba(3,7,18,0.9);
+      backdrop-filter: blur(6px);
+    }
+    #sound-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      color: #9ca3af;
+    }
+    #sound-indicator span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #ef4444;
+      box-shadow: 0 0 8px rgba(239,68,68,0.7);
+    }
+    #sound-indicator.muted span.dot {
+      background: #4b5563;
+      box-shadow: none;
+    }
+    #sound-indicator small {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+    @media (max-width: 900px) {
+      #scene-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: 55% 45%;
+      }
+      #scene-text-wrap {
+        border-left: none;
+        border-top: 1px solid #111827;
+      }
+    }
+  </style>
+</head>
+<body>
+<div id="game">
+  <header>
+    <span class="title">St. Sebastian – Prolog</span>
+    <span>Kapitel 0: Das, was bleibt</span>
+  </header>
+
+  <div id="scene-container">
+    <div id="scene-image-wrap">
+      <img id="scene-image" src="" alt="Szene" />
+      <div id="vignette"></div>
+    </div>
+    <div id="scene-text-wrap">
+      <div>
+        <div id="scene-title"></div>
+        <div id="scene-body"></div>
+        <div id="choices"></div>
+        <div id="logline"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer">
+    <div id="sound-indicator" class="muted">
+      <span class="dot"></span>
+      <small>SOUND</small>
+    </div>
+    <div>Hinweis: Kopfhörer empfohlen.</div>
+  </div>
+</div>
+
+<!-- Ambient-Musik (loop) -->
+<audio id="music-ambient" src="resident_evil_style.mp3" loop></audio>
+
+<!-- Soundeffekte (Platzhalter-Dateien anpassen) -->
+<audio id="sfx-heartbeat" src="sfx_heartbeat.mp3"></audio>
+<audio id="sfx-whisper" src="sfx_whisper.mp3"></audio>
+<audio id="sfx-door" src="sfx_door.mp3"></audio>
+<audio id="sfx-step" src="sfx_step.mp3"></audio>
+
+<script>
+  // --- Szenen-Definition ---
+  // Passe die Bild-Dateinamen an deine Dateien an.
+  const scenes = [
+    {
+      id: "intro-haus",
+      title: "Das Haus am Rand des Waldes",
+      image: "verlassenes_haus.jpg",
+      text: `
+Der Regen hat erst vor wenigen Minuten aufgehört, aber der Geruch von nasser Erde hängt noch in der Luft.
+
+Lynn und Tristan stehen vor dem Haus, das seit Jahren nur noch in Gerüchten existiert: St. Sebastian, das Krankenhaus, das nie offiziell geschlossen wurde – es hörte einfach auf, zu antworten.
+
+Das Licht ihrer Handys reicht kaum, um die Fassade zu erkennen. Fenster wie leere Augen, die Veranda morsch, das Holz schwarz vor Feuchtigkeit.
+
+Irgendwo im Wald knackt ein Ast. Zu nah, um Zufall zu sein.`,
+      logline: "Etwas in diesem Haus wartet schon länger, als es sollte.",
+      choices: [
+        { label: "Weiter zum Wald", target: "wald-vor-dem-krankenhaus", sfx: "step" }
+      ]
+    },
+    {
+      id: "wald-vor-dem-krankenhaus",
+      title: "Der Wald verschluckt den Weg",
+      image: "wald_dunkel.jpg",
+      text: `
+Der Pfad ist kaum mehr als eine Erinnerung im Boden. Wurzeln greifen nach den Schuhen, als wollten sie festhalten, was einmal hier war.
+
+Zwischen den Bäumen flackert etwas Blaues. Kein Stern, kein Auto, kein Hauslicht – eher wie ein Fehler in der Nacht.
+
+Lynn bleibt stehen. Tristan atmet schneller, als er zugibt.
+
+„Siehst du das?“, fragt sie.
+
+Das Licht antwortet nicht. Es flackert nur – wie ein Atemzug, der nicht zu einem Körper gehört.`,
+      logline: "Der Wald führt nicht irgendwohin. Er führt zurück.",
+      choices: [
+        { label: "Auf das Licht zugehen", target: "krankenhaus-im-wald", sfx: "whisper" }
+      ]
+    },
+    {
+      id: "krankenhaus-im-wald",
+      title: "Szene A – Das Krankenhaus im Wald",
+      image: "krankenhaus_wald_blau.jpg",  // dein A-Bild
+      text: `
+Das Krankenhaus steht da, als hätte der Wald es ausgespuckt und dann vergessen.
+
+Die Fassade ist grau, die Fenster schwarz. Über dem Eingang hängt ein großes Metallschild, so verrostet, dass kein Buchstabe mehr zu erkennen ist – nur Bruchstücke, wo einmal ein Name war.
+
+Ein einziges Fenster im oberen Stockwerk glimmt in kaltem Blau. Kein warmes Licht – eher wie ein technisches Nachleuchten, das nie abgeschaltet wurde.
+
+Der Asphalt vor dem Eingang ist aufgebrochen, Gras wächst durch die Risse. Ein alter Krankenwagen steht schief im Gebüsch, die Scheiben eingeschlagen, das Innere leer.
+
+„Nicht mehr in Betrieb“, flüstert Tristan.
+
+Lynn weiß, dass es stimmt. Aber irgendetwas an diesem Ort ist noch lebendig, nicht fertig ist.`,
+      logline: "Manchmal ist das Verlassene das, was noch nicht gehen will.",
+      choices: [
+        { label: "Durch den Eingang gehen", target: "flur-krankenhaus", sfx: "door" }
+      ]
+    },
+    {
+      id: "flur-krankenhaus",
+      title: "Der Flur",
+      image: "krankenhaus_flur.jpg",
+      text: `
+Der erste Schritt in das Gebäude klingt zu laut. Der Boden ist feucht, irgendwo tropft Wasser in unregelmäßigen Abständen.
+
+Die Neonröhren an der Decke sind längst kaputt, aber irgendwoher kommt ein schwaches, bläuliches Restlicht, das den Flur in ein flaches, kaltes Grau taucht.
+
+An den Wänden hängen alte Hinweisschilder: Station B, Röntgen, Verwaltung. Die Pfeile zeigen in Richtungen, die längst keine Bedeutung mehr haben.
+
+Lynn spürt, wie sich die Luft verändert. Dicker. Schwerer. Als würde der Flur sie registrieren.`,
+      logline: "Der erste Schritt hinein ist immer eine Entscheidung.",
+      choices: [
+        { label: "Dem Flur folgen", target: "dr-krafts-tagebuch", sfx: "step" }
+      ]
+    },
+    {
+      id: "dr-krafts-tagebuch",
+      title: "Szene B – Dr. Krafts Tagebuch",
+      image: "dr_kraft_tagebuch.jpg",  // dein B-Bild
+      text: `
+Der Raum wirkt wie ein Büro, das jemand in Eile verlassen hat – vor sehr langer Zeit.
+
+Auf dem Schreibtisch liegt ein aufgeschlagenes Notizbuch. Die Seiten sind vergilbt, die Ränder wellig, als hätten sie Feuchtigkeit und Zeit in sich aufgesogen.
+
+Handschrift in dunkler Tinte zieht sich über die Seiten, hastig, unruhig. Zwischen den Zeilen: Skizzen von Schädeln, Gehirnen, Spritzen. Dazwischen dunkle, eingetrocknete Flecken, die keine Tinte sind.
+
+„Dr. Krafts Tagebuch“, liest Tristan leise vom Einband.
+
+Lynn fährt mit dem Finger knapp an einer getrockneten Tintenspur vorbei. Die letzte lesbare Zeile endet mitten im Satz:
+
+„…wenn die Patienten nicht mehr zwischen Erinnerung und…“`,
+      logline: "Manche Geschichten hören nicht auf – sie werden nur nicht bis zum Ende erzählt.",
+      choices: [
+        { label: "Weiterblättern", target: "schatten-patientin", sfx: "whisper" }
+      ]
+    },
+    {
+      id: "schatten-patientin",
+      title: "Szene C – Der Schatten der Patientin",
+      image: "patientin_schatten.jpg",  // dein C-Bild
+      text: `
+Das Krankenzimmer riecht nach altem Desinfektionsmittel und etwas, das längst hätte verschwinden sollen.
+
+Das Bett ist leer, die Laken zerknittert, als hätte sich jemand im Schlaf gewehrt. Ein Tropf hängt noch am Ständer, die Flüssigkeit im Beutel längst eingetrocknet.
+
+Die Deckenlampe flackert in unregelmäßigen Abständen. Mit jedem Aufflackern taucht ein Schatten an der Wand auf – die Silhouette einer Frau, Kopf leicht geneigt, Haare wirr, Schultern schmal.
+
+Wenn das Licht erlischt, ist die Wand leer.
+
+„Siehst du das?“, fragt Lynn.
+
+Tristan antwortet nicht. Er starrt auf die Wand, als würde er versuchen, sich zu erinnern, ob er hier schon einmal war.`,
+      logline: "Nicht alles, was übrig bleibt, hat noch einen Körper.",
+      choices: [
+        { label: "Den Raum verlassen", target: "taschenlampe-szene", sfx: "step" }
+      ]
+    },
+    {
+      id: "taschenlampe-szene",
+      title: "Szene D – Der Lichtkegel",
+      image: "taschenlampe_szene.jpg",  // dein D-Bild
+      text: `
+Der Flur dahinter ist dunkler als der Raum zuvor. Das Restlicht reicht nicht mehr.
+
+Lynn schaltet die Taschenlampe ein. Der Lichtkegel schneidet durch den Nebel, der knapp über dem Boden hängt, und bleibt an einer Tür stehen, deren Schild halb abgefallen ist.
+
+„PERSONAL ONLY“, steht noch in verblassten Buchstaben darauf.
+
+Daneben liegt ein umgestürzter Wagen, Instrumente liegen überall verstreut, Metall, das im Licht kurz aufblitzt und dann wieder im Schwarz verschwindet.
+
+Hinter der Tür ist es still.
+
+Lynn legt die Hand auf die Klinke. Für einen Moment fühlt sie etwas Kaltes darunter – nicht Metall, eher wie eine Erinnerung, die sich wehrt.
+
+Dann drückt sie die Tür langsam auf.`,
+      logline: "Manchmal wartet das, was du suchst, schon auf dich.",
+      choices: [
+        { label: "Ende des Prologs", target: "ende", sfx: "heartbeat" }
+      ]
+    },
+    {
+      id: "ende",
+      title: "Ende des Prologs",
+      image: "wald_boden.jpg",
+      text: `
+Später wird Lynn sich nicht mehr sicher sein, was genau hinter dieser Tür passiert ist.
+
+Nur daran, wie sich ihr Körper angefühlt hat: zu leicht, unwirklich, zu weit weg. Als würde jemand anderes durch ihre Augen sehen.
+
+Tristan wird sagen, dass sie übertrieben hat. Dass es nur ein altes Krankenhaus war, ein Ort, an dem Dinge zurückbleiben, weil niemand sie aufräumt.
+
+Aber in manchen Nächten, wenn der Wind aus der falschen Richtung kommt, hört sie wieder das Flackern der Lampe. Und das leise Kratzen einer Feder auf Papier.
+
+Irgendwo, in einem Raum ohne Zeit, schreibt jemand weiter an einem Tagebuch, das nie zu Ende geführt wurde.`,
+      logline: "St. Sebastian ist kein Ort. Es ist ein andauernder Traum.",
+      choices: [
+        { label: "Prolog erneut beginnen", target: "intro-haus", sfx: "step" }
+      ]
+    }
+  ];
+
+  // --- Audio-Handling ---
+  const musicAmbient = document.getElementById("music-ambient");
+  const sfx = {
+    heartbeat: document.getElementById("sfx-heartbeat"),
+    whisper: document.getElementById("sfx-whisper"),
+    door: document.getElementById("sfx-door"),
+    step: document.getElementById("sfx-step")
+  };
+
+  let soundMuted = true;
+  const soundIndicator = document.getElementById("sound-indicator");
+
+  soundIndicator.addEventListener("click", () => {
+    soundMuted = !soundMuted;
+    soundIndicator.classList.toggle("muted", soundMuted);
+    if (soundMuted) {
+      musicAmbient.pause();
+      Object.values(sfx).forEach(a => { a.pause(); a.currentTime = 0; });
+    } else {
+      musicAmbient.volume = 0.4;
+      musicAmbient.play().catch(() => {});
+    }
+  });
+
+  function playSfx(name) {
+    if (soundMuted) return;
+    const audio = sfx[name];
+    if (!audio) return;
+    audio.currentTime = 0;
+    audio.volume = 0.8;
+    audio.play().catch(() => {});
+  }
+
+  // --- Szenen-Rendering ---
+  const imgEl = document.getElementById("scene-image");
+  const titleEl = document.getElementById("scene-title");
+  const bodyEl = document.getElementById("scene-body");
+  const choicesEl = document.getElementById("choices");
+  const loglineEl = document.getElementById("logline");
+
+  let currentSceneId = "intro-haus";
+
+  function showScene(id) {
+    const scene = scenes.find(s => s.id === id);
+    if (!scene) return;
+    currentSceneId = id;
+
+    imgEl.src = scene.image;
+    imgEl.alt = scene.title;
+    titleEl.textContent = scene.title;
+    bodyEl.textContent = scene.text.trim();
+    loglineEl.textContent = scene.logline || "";
+
+    choicesEl.innerHTML = "";
+    (scene.choices || []).forEach(choice => {
+      const btn = document.createElement("button");
+      btn.className = "choice";
+      btn.textContent = choice.label;
+      btn.addEventListener("click", () => {
+        if (choice.sfx) playSfx(choice.sfx);
+        showScene(choice.target);
+      });
+      choicesEl.appendChild(btn);
+    });
+  }
+
+  // Startszene
+  showScene(currentSceneId);
+</script>
+</body>
+</html>
